@@ -6,6 +6,7 @@ EvryProvider = require './evry-provider'
 CljCommands = require './clj-commands'
 highlight = require './sexp-highlight'
 MarkerCollection = require './marker-collection'
+Trace = require './commands/trace'
 
 module.exports =
   config: require('./configs')
@@ -125,6 +126,7 @@ module.exports =
         protoRepl.onDidConnect =>
           atom.notifications.addSuccess("REPL connected") if atom.config.get('clojure-plus.notify')
           @getCommands().prepare()
+          window.trace = new Trace(@commands.promisedRepl)
 
           if atom.config.get('clojure-plus.refreshAfterConnect')
             @getCommands().runRefresh()
