@@ -13,10 +13,8 @@
     (+ b 10)))
 
 (defn test3 [x y]
-  (let [a (+ x y)
-        b (- x y)]
-    (when-let [c (inc a)]
-      (+ a b c))))
+  (when-let [c (inc x)]
+    (+ c y)))
 
 (defn reset-all []
   (reset! sayid/workspace nil)
@@ -68,23 +66,45 @@
 
 (testing "inner trace"
   (reset-all)
+  (sayid/ws-add-trace-fn! test3)
+  (test3 11 20)
+  (let [id (-> (t/trace-str) first :id)]
+    (is (= [{:fn "when-let"
+             :args nil
+             :mapping nil
+             :returned 32
+             :children [{:fn "inc"
+                         :args ["11"]
+                         :mapping nil
+                         :returned 12
+                         :children nil}
+                        {:fn "+"
+                         :args ["12" "20"]
+                         :mapping nil
+                         :returned 32
+                         :children nil}]}]
+           (traced (t/trace-inner id))))))
+
+(testing "inner trace with let"
+  (reset-all)
   (sayid/ws-add-trace-fn! test1)
   (test1 11 20)
   (test1 22 20)
   (let [id (-> (t/trace-str) first :id)]
-    (is (= [{:fn "(+ x y)"
-             :returned 31
-             :children nil}
-            {:fn "(- x y)"
-             :returned -9
-             :children nil}
-            {:fn "let"
+    (is (= [{:fn "let"
              :args ["[a 31 b -9]"]
              :mapping {'a 31 'b -9}
              :returned 22
-             :children [{:fn "+"
+             :children [{:fn "(+ x y)"
+                         :returned 31
+                         :children nil}
+                        {:fn "(- x y)"
+                         :returned -9
+                         :children nil}
+                        {:fn "+"
                          :args ["31" "-9"]
                          :mapping nil
                          :returned 22
                          :children nil}]}]
+
            (traced (t/trace-inner id))))))
