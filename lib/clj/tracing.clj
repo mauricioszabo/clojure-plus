@@ -17,23 +17,24 @@
 
 (declare trace-child)
 (defn- let-binds [child]
-  (println "LET BINDS")
   (let [outer-fns (mapv (fn [[ret _ form]]
-                          {:fn form
+                          {:fn (str form)
                            :returned ret
                            :children nil})
                         (:let-binds child))
-        maps (map (fn [[ret var _]] [ret var]) (:let-binds child))
+        maps (map (fn [[ret var _]] [var ret]) (:let-binds child))
         let-fn {:fn (-> child :inner-tags last name)
-                :args (->> maps (mapv #(symbol (s/join " " %))) str)
-                :returned (:return child)}]
+                :args (->> maps (mapv #(symbol (s/join " " %))) str vector)
+                :mapping (into {} maps)
+                :returned (:return child)
+                :children (trace-child child)}]
     (conj outer-fns let-fn)))
 
 (defn- function [child]
   [{:id (:id child)
     :fn (-> child :name str)
     :args (mapv truncate (:args child))
-    :mapping @(:arg-map child)
+    :mapping (->> child :arg-map deref not-empty)
     :returned (:return child)
     :children (trace-child child)}])
 

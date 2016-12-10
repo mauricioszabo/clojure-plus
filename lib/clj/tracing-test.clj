@@ -84,6 +84,7 @@
              :returned 22
              :children [{:fn "+"
                          :args ["31" "-9"]
+                         :mapping nil
                          :returned 22
                          :children nil}]}]
            (traced (t/trace-inner id))))))
