@@ -49,3 +49,12 @@
                        :mapping {'x 5, 'y 10}
                        :children nil}]}]
          (traced (t/trace-str)))))
+
+(testing "reset"
+  (reset-all)
+  (sayid/ws-add-trace-fn! test1)
+  (test1 11 20)
+  (t/reset-sayid!)
+  (is (empty? (t/trace-str)))
+  (test1 11 20)
+  (is (not (empty? (t/trace-str)))))

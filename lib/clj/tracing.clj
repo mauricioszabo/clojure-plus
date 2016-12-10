@@ -3,7 +3,7 @@
 
 (defn reset-sayid! []
   (let [{:keys [fn ns]} (:traced (sayid/ws-get-active!))]
-    (sayid/ws-reset!)
+    (with-out-str (sayid/ws-reset!))
     (doseq [f fn] (sayid/ws-add-trace-fn!* f))
     (doseq [n ns] (sayid/ws-add-trace-ns!* n))))
 
