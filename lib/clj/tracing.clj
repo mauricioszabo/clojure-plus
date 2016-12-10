@@ -16,9 +16,11 @@
 (defn- trace-child [children]
   (when (not-empty children)
     (for [child children]
-      {:fn (-> child :name str)
+      {:id (:id child)
+       :fn (-> child :name str)
        :args (mapv truncate (:args child))
-       :returned (-> child :return str)
+       :mapping @(:arg-map child)
+       :returned (:return child)
        :children (trace-child @(:children child))})))
 
 (defn trace-str
