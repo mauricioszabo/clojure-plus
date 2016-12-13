@@ -37,7 +37,7 @@
            :mapping {'x 11, 'y 20}
            :children nil}]
          (traced (t/trace-str))))
-  (is (keyword? (-> (t/trace-str) first :id))))
+  (is (keyword? (-> (t/trace-str) first :id keyword))))
 
 (testing "tracing dependent functions"
   (reset-all)
@@ -68,7 +68,7 @@
   (reset-all)
   (sayid/ws-add-trace-fn! test3)
   (test3 11 20)
-  (let [id (-> (t/trace-str) first :id)]
+  (let [id (-> (t/trace-str) first :id keyword)]
     (is (= [{:fn "when-let"
              :args nil
              :mapping nil
@@ -90,7 +90,7 @@
   (sayid/ws-add-trace-fn! test1)
   (test1 11 20)
   (test1 22 20)
-  (let [id (-> (t/trace-str) first :id)]
+  (let [id (-> (t/trace-str) first :id keyword)]
     (is (= [{:fn "let"
              :args ["[a 31 b -9]"]
              :mapping {'a 31 'b -9}

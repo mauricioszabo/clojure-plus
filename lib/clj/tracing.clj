@@ -23,7 +23,7 @@
                            :children nil})
                        (:let-binds child))
         maps (map (fn [[ret var _]] [var ret]) (:let-binds child))
-        let-fn {:id (:id child)
+        let-fn {:id (name (:id child))
                 :fn (-> child :inner-tags last name)
                 :args (->> maps (mapv #(symbol (s/join " " %))) str vector)
                 :mapping (into {} maps)
@@ -32,7 +32,7 @@
     [let-fn]))
 
 (defn- function [child]
-  [{:id (:id child)
+  [{:id (name (:id child))
     :fn (str (or #_(:form child) (:name child)))
     :args (not-empty (mapv truncate (:args child)))
     :mapping (some-> child :arg-map deref not-empty)
