@@ -19,24 +19,26 @@
 (defn- let-binds [child]
   (let [outer-fns (mapv (fn [[ret _ form]]
                           {:fn (str form)
-                           :returned ret
+                           :returned (str ret)
                            :children nil})
                        (:let-binds child))
-        maps (map (fn [[ret var _]] [var ret]) (:let-binds child))
+        maps (map (fn [[ret var _]] [var (str ret)]) (:let-binds child))
         let-fn {:id (name (:id child))
                 :fn (-> child :inner-tags last name)
-                :args (->> maps (mapv #(symbol (s/join " " %))) str vector)
+                ; :args (->> maps (mapv #(symbol (s/join " " %))) str vector)
+                :args (-> child :xpanded-frm second str vector)
                 :mapping (into {} maps)
-                :returned (:return child)
+                :returned (str (:return child))
                 :children (-> outer-fns (concat (trace-child child)) vec)}]
     [let-fn]))
 
 (defn- function [child]
+  (println child)
   [{:id (name (:id child))
     :fn (str (or #_(:form child) (:name child)))
     :args (not-empty (mapv truncate (:args child)))
-    :mapping (some-> child :arg-map deref not-empty)
-    :returned (:return child)
+    :mapping (some->> child :arg-map deref not-empty (map (fn [[k v]] [k (str v)])) (into {}))
+    :returned (str (:return child))
     :children (trace-child child)}])
 
 (defn- trace-child [workspace]
@@ -53,8 +55,12 @@
 
 (defn trace-inner [id]
   (when-let [call (-> [:id id] sayid/ws-query :children first)]
-    (let [f (-> call :name)
+    (clojure.pprint/pprint call)
+    (let [var (ns-resolve (or (:ns call) *ns*) (:name call))
+          f (symbol (str (.name (.ns var)) "/" (.sym var)))
           args (:args call)]
+      (println var)
+      (println f)
       (sayid/ws-add-inner-trace-fn!* f)
       (apply (resolve f) args)
       (trace-child (some-> (sayid/ws-get-active!) :children deref last)))))
