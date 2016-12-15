@@ -126,7 +126,7 @@ module.exports =
         protoRepl.onDidConnect =>
           atom.notifications.addSuccess("REPL connected") if atom.config.get('clojure-plus.notify')
           @getCommands().prepare()
-          window.trace = new Trace(@commands.promisedRepl)
+          window.trace = new Trace(@commands.promisedRepl, @subs)
 
           if atom.config.get('clojure-plus.refreshAfterConnect')
             @getCommands().runRefresh()

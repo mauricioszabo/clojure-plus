@@ -1,26 +1,41 @@
 module.exports = class Trace
-  constructor: (@repl) ->
+  constructor: (@repl, subs) ->
     code = @getFile("~/.atom/packages/clojure-plus/lib/clj/tracing.clj")
     @repl.clear()
-    @repl.syncRun(code)
+    console.log(code)
+    @repl.syncRun(code).then (e) =>
+      console.log("SYNC", e)
+
+    subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:add-trace-to-function', =>
+      editor = atom.workspace.getActiveTextEditor()
+      varName = editor.getWordUnderCursor(wordRegex: /[a-zA-Z0-9\-.$!?:\/><\+*]+/)
+      @traceFn(varName)
+
+    subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:run-and-trace', =>
+
+    subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:run-and-trace', =>
+      @reset()
+      editor = atom.workspace.getActiveTextEditor()
+      range = protoRepl.EditorUtils.getCursorInBlockRange(editor, topLevel: true)
+      protoRepl.clearRepl() if atom.config.get('clojure-plus.clearRepl')
+      @repl.syncRun(editor.getTextInRange(range)).then (res) =>
+        console.log("RES", res)
+        @showTrace(editor, range)
 
   traceFn: (name) ->
-    editor = atom.workspace.getActiveTextEditor()
-    varName = editor.getWordUnderCursor(wordRegex: /[a-zA-Z0-9\-.$!?:\/><\+*]+/)
-    code = "(com.billpiel.sayid.core/ws-add-trace-fn! #{varName})"
+    code = "(com.billpiel.sayid.core/ws-add-trace-fn! #{name})"
     @repl.syncRun(code)
 
   reset: ->
     code = "(clj.__tracing__/reset-sayid!)"
     @repl.syncRun(code, "_clj._sayid", session: 'exception').then (e) => console.log e
 
-  showTrace: ->
-    editor = atom.workspace.getActiveTextEditor()
-    range = editor.getSelectedBufferRange()
+  showTrace: (editor, range) ->
     result = new protoRepl.ink.Result(editor, [range.start.row, range.end.row], type: "block")
     result.view.classList.add('proto-repl')
 
     @repl.syncRun("(clj.__tracing__/trace-str)").then (res) =>
+      console.log("RES Trace", res)
       return unless res.value
       value = protoRepl.parseEdn(res.value)
       return unless value
