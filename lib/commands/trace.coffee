@@ -1,8 +1,9 @@
 module.exports = class Trace
   constructor: (@repl, subs) ->
     code = @getFile("~/.atom/packages/clojure-plus/lib/clj/tracing.clj")
-    @repl.clear()
+    console.log @repl.clear()
     console.log(code)
+    [window.code, window.repl] = [code, @repl]
     @repl.syncRun(code).then (e) =>
       console.log("SYNC", e)
 
