@@ -1,10 +1,11 @@
 module.exports = class Trace
   constructor: (@repl, subs) ->
     code = @getFile("~/.atom/packages/clojure-plus/lib/clj/tracing.clj")
-    console.log @repl.clear()
-    console.log(code)
+    # console.log @repl.clear()
+    # console.log(code)
     [window.code, window.repl] = [code, @repl]
-    @repl.syncRun(code).then (e) =>
+    @repl.lastCmd.then (e) => console.log "REPL READY", e
+    @repl.runCodeInNS(code, 'clj.--tracing--').then (e) =>
       console.log("SYNC", e)
 
     subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:add-trace-to-function', =>
@@ -12,8 +13,8 @@ module.exports = class Trace
       varName = editor.getWordUnderCursor(wordRegex: /[a-zA-Z0-9\-.$!?:\/><\+*]+/)
       @traceFn(varName)
 
-    subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:run-and-trace', =>
-
+    # subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:run-and-trace', =>
+    #
     subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:run-and-trace', =>
       @reset()
       editor = atom.workspace.getActiveTextEditor()
@@ -48,7 +49,11 @@ module.exports = class Trace
     els = values.forEach ({fn, args, children, id, mapping, returned}) =>
       fn = "(#{fn} #{args.join(" ")})" if !fn.startsWith('(') && args?
       fnHTML = document.createElement('strong')
-      fnHTML.innerText = "#{fn} => #{returned}"
+      returned = protoRepl.ednToDisplayTree(returned)
+      retHTML = @resToHTMLTree(returned)
+      retHTML.classList.add('result')
+      fnHTML.innerText = "#{fn} => "
+      fnHTML.appendChild(retHTML)
 
       mappingHTML = document.createElement('div')
       for k, v of mapping
@@ -57,7 +62,8 @@ module.exports = class Trace
         mappingHTML.appendChild(p)
 
       returnedHTML = document.createElement('div')
-      returnedHTML.innerText = "RETURNED => #{returned}"
+      returnedHTML.innerText = "RETURNED => "
+      returnedHTML.appendChild(retHTML)
 
       childrenHTML = @createElements(children, document.createElement('div')) if children
       if !childrenHTML?
@@ -65,6 +71,7 @@ module.exports = class Trace
         a.innerText = "TRACE"
         a.onclick = =>
           @repl.syncRun("(clj.__tracing__/trace-inner :#{id})").then (res) =>
+            console.log "TRACE RES", trace, res
             childrenHTML.innerHTML = ""
             return unless res.value
             value = protoRepl.parseEdn(res.value)
@@ -81,6 +88,12 @@ module.exports = class Trace
       result.setContent(d)
     else
       result.appendChild(d)
+
+  resToHTMLTree: (returned) ->
+    children = returned.slice(2)
+    console.log "C", children
+    childrenHTML = children.map (c) => @resToHTMLTree(c)
+    protoRepl.ink.tree.treeView(returned[0], childrenHTML, {})
 
   getFile: (file) ->
     home = process.env.HOME
