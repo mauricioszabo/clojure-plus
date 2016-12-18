@@ -48,46 +48,91 @@ module.exports = class Trace
     d = document.createElement('div')
     values.forEach ({fn, args, children, id, mapping, returned}) =>
       console.log 'DEBUG', [fn, args, children, id, mapping, returned]
-      fn = "(#{fn} #{args.join(" ")})" if !fn.startsWith('(') && args?
-      fnHTML = document.createElement('strong')
-      returned = protoRepl.ednToDisplayTree(returned)
-      retHTML = @resToHTMLTree(returned)
+      # SETUP
+      fatherElement = document.createElement('div')
+      functionElement = document.createElement('div')
+      childrenElement = document.createElement('div')
+      innerTrace = document.createElement('div')
+      fatherElement.appendChild(functionElement)
+      fatherElement.appendChild(childrenElement)
+
+      # Function PART
+      functionSpan = document.createElement('span')
+      functionSpan.innerText = "#{fn} => "
+
+      resultDiv = document.createElement('div')
+      resultDiv.classList.add('result')
+      retHTML = @resToHTMLTree(protoRepl.ednToDisplayTree(returned))
       retHTML.classList.add('result')
-      span = document.createElement('span')
-      span.innerText = "#{fn} => "
-      fnHTML.appendChild(span)
-      fnHTML.appendChild(retHTML)
+      resultDiv.appendChild(retHTML)
+      functionElement.appendChild(functionSpan)
+      functionElement.appendChild(resultDiv)
 
-      mappingHTML = document.createElement('div')
-      for k, v of mapping
-        p = document.createElement('div')
-        p.innerText = "#{k} => #{v}"
-        mappingHTML.appendChild(p)
+      # Children PART
+      childElements = []
+      if children
+        childElements.push @createElements(children, document.createElement('div'))
 
-      returnedHTML = document.createElement('div')
-      span = document.createElement('span')
-      span.innerText = "RETURNED => "
-      returnedHTML.appendChild(span)
-      returnedHTML.appendChild(retHTML.cloneNode())
+      # Inner trace PART
+      a = document.createElement('a')
+      a.innerText = "TRACE"
+      a.onclick = =>
+        @repl.syncRun("(clj.__tracing__/trace-inner :#{id})").then (res) =>
+          console.log "TRACE RES", trace, res
+          innerTrace.innerHTML = "Child"
+          return unless res.value
+          value = protoRepl.parseEdn(res.value)
+          return unless value
+          @createElements(value, innerTrace)
+      innerTrace.appendChild a
+      childElements.push innerTrace
 
-      childrenHTML = @createElements(children, document.createElement('div')) if children
-      if !childrenHTML?
-        a = document.createElement('a')
-        a.innerText = "TRACE"
-        a.onclick = =>
-          @repl.syncRun("(clj.__tracing__/trace-inner :#{id})").then (res) =>
-            console.log "TRACE RES", trace, res
-            childrenHTML.innerHTML = ""
-            return unless res.value
-            value = protoRepl.parseEdn(res.value)
-            return unless value
-            @createElements(value, childrenHTML)
-        childrenHTML = document.createElement('div')
-        childrenHTML.appendChild(a)
+      treeHTML = protoRepl.ink.tree.treeView(childrenElement, childElements, {})
+      fatherElement.appendChild treeHTML
+      d.appendChild(fatherElement)
 
-      child = [mappingHTML, childrenHTML, returnedHTML]
-      treeHtml = protoRepl.ink.tree.treeView(fnHTML, child, {})
-      d.appendChild(treeHtml)
+      # returnedHTML.appendChild(span)
+      # returnedHTML.appendChild(retHTML.cloneNode())
+      # fn = "(#{fn} #{args.join(" ")})" if !fn.startsWith('(') && args?
+      # fnHTML = document.createElement('strong')
+      # returned = protoRepl.ednToDisplayTree(returned)
+      # retHTML = @resToHTMLTree(returned)
+      # retHTML.classList.add('result')
+      # span = document.createElement('span')
+      # span.innerText = "#{fn} => "
+      # fnHTML.appendChild(span)
+      # fnHTML.appendChild(retHTML)
+      #
+      # mappingHTML = document.createElement('div')
+      # for k, v of mapping
+      #   p = document.createElement('div')
+      #   p.innerText = "#{k} => #{v}"
+      #   mappingHTML.appendChild(p)
+      #
+      # returnedHTML = document.createElement('div')
+      # span = document.createElement('span')
+      # span.innerText = "RETURNED => "
+      # returnedHTML.appendChild(span)
+      # returnedHTML.appendChild(retHTML.cloneNode())
+      #
+      # childrenHTML = @createElements(children, document.createElement('div')) if children
+      # if !childrenHTML?
+      #   a = document.createElement('a')
+      #   a.innerText = "TRACE"
+      #   a.onclick = =>
+      #     @repl.syncRun("(clj.__tracing__/trace-inner :#{id})").then (res) =>
+      #       console.log "TRACE RES", trace, res
+      #       childrenHTML.innerHTML = ""
+      #       return unless res.value
+      #       value = protoRepl.parseEdn(res.value)
+      #       return unless value
+      #       @createElements(value, childrenHTML)
+      #   childrenHTML = document.createElement('div')
+      #   childrenHTML.appendChild(a)
+      #
+      # child = [mappingHTML, childrenHTML, returnedHTML]
+      # treeHtml = protoRepl.ink.tree.treeView(fnHTML, child, {})
+      # d.appendChild(treeHtml)
 
     if result.setContent
       result.setContent(d)

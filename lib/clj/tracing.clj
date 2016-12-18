@@ -46,7 +46,7 @@
       :fn f
       :args (not-empty (mapv treat-return (:args child)))
       :mapping (some->> child :arg-map deref not-empty (map (fn [[k v]] [k (str v)])) (into {}))
-      :returned (treat-return (:result child))
+      :returned (treat-return (:return child))
       :children (trace-child child)}]))
 
 (defn p [x] (println "DEBUG:" x) x)
@@ -59,9 +59,9 @@
               (cond
                 (:let-binds child) (let-binds child)
 
-                ; (or (some-> child :name p (not= 'let*))
-                ;     (and (p (:form child)) #_(-> child :form first p (not= 'let*))))
-                :all
+                (or (some-> child :name p (not= 'let*))
+                    (and (p (:form child)) #_(-> child :form first p (not= 'let*))))
+                ; :all
                 (function child)
 
                 :else (trace-child child)))
