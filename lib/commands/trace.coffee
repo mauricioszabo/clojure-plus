@@ -46,7 +46,7 @@ module.exports = class Trace
 
   createElements: (values, result) ->
     d = document.createElement('div')
-    els = values.forEach ({fn, args, children, id, mapping, returned}) =>
+    values.forEach ({fn, args, children, id, mapping, returned}) =>
       console.log 'DEBUG', [fn, args, children, id, mapping, returned]
       fn = "(#{fn} #{args.join(" ")})" if !fn.startsWith('(') && args?
       fnHTML = document.createElement('strong')
