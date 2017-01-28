@@ -18,7 +18,7 @@ module.exports = class Trace
     @prepare(subs)
 
   prepare: (subs) ->
-    code = @getFile("~/.atom/packages/clojure-plus/lib/clj/tracing.clj")
+    code = @getFile("~/.atom/packages/clojure-plus/lib/clj/__tracing__.clj")
     [window.code, window.repl] = [code, @repl]
     @repl.lastCmd.then (e) => console.log "REPL READY", e
     @repl.runCodeInNS(code, 'clj.--tracing--').then (e) =>
