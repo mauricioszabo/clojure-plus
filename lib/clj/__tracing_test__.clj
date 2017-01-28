@@ -21,6 +21,22 @@
   (sayid/ws-get-active!)
   (with-out-str (sayid/ws-reset!)))
 
+(reset-all)
+(sayid/ws-add-inner-trace-fn! test3)
+
+(defn norm-namespace [namespace]
+  (-> namespace
+      (select-keys [:name :args :return :src-pos :form :xpanded-frm :xpanded-parent :children :arg-map])
+      (update :children #(some-> % deref count))
+      (update :arg-map #(some-> % deref))))
+
+(def nn
+  (norm-namespace (-> (sayid/ws-get-active!) :children deref first
+                      :children deref first
+                      :children deref second
+                      :children deref first)))
+                    ; :children deref first))
+
 (defn traced [stacks]
   (when stacks (for [row stacks]
                  (-> row
@@ -148,5 +164,4 @@
                          :returned []}]}]
            (traced @last-traces)))))
 
-
-(t/trace-str)
+; (t/trace-str)

@@ -86,3 +86,48 @@
       (sayid/ws-add-inner-trace-fn!* f)
       (apply (resolve f) args)
       (trace-child (some-> (sayid/ws-get-active!) :children deref last)))))
+
+
+(declare child-as-str)
+
+(defn replace-mappings [form mappings]
+  (cond
+    (vector? form) (mapv #(replace-mappings % mappings) form)
+    (map? form) (->> form (map  (fn [[k v]] [(replace-mappings k mappings)
+                                             (replace-mappings v mappings)]))
+                          (into {}))
+    (coll? form) (->> form
+                      (map #(replace-mappings % mappings))
+                      (apply list))
+    :else (if (contains? mappings form)
+            (get mappings form)
+            form)))
+
+(defn element-as-str [child mappings]
+  (let [ret (:return child)
+        mappings (merge mappings (some-> child :arg-map deref))
+        children-els (child-as-str child mappings)
+        display (if-let [args (:args child)]
+                  (->> args (cons (:name child)) (s/join " ") (#(str "(" % ")")))
+                  (:form child))
+        with-replaced (cond-> display (not (string? display)) (replace-mappings mappings))]
+    {:display (str display)
+     :ret ret
+    ;  :id (:id child)
+     :mapping mappings
+     :replaced (str with-replaced)
+     :children children-els}))
+
+(defn child-as-str [workspace mappings]
+  (when-let [children (some-> workspace :children deref not-empty)]
+    (mapv #(element-as-str % mappings) children)))
+
+(defn traced-as-str []
+  (child-as-str (sayid/ws-get-active!) {}))
+
+(traced-as-str)
+;
+; (def f clj.__tracing-test__/f)
+;
+; m
+; (contains? m (-> f (nth 2) (nth 2)))
