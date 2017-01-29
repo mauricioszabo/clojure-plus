@@ -22,6 +22,8 @@ module.exports =
     @subs = new CompositeDisposable()
     @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:refresh-namespaces', =>
       @getCommands().runRefresh()
+    @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:interrupt', =>
+      @interrupt()
     @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:toggle-simple-refresh', =>
       atom.config.set('clojure-plus.simpleRefresh', !atom.config.get('clojure-plus.simpleRefresh'))
     @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:goto-var-definition', =>
@@ -135,6 +137,10 @@ module.exports =
       editor = atom.workspace.getActiveTextEditor()
       [range, symbol] = @getRangeAndVar(editor)
       protoRepl.executeCodeInNs("`" + symbol, inlineOptions: {editor: editor, range: range})
+
+  interrupt: ->
+    protoRepl.interrupt()
+    @getCommands().promisedRepl.clear()
 
   importForMissing: ->
       editor = atom.workspace.getActiveTextEditor()
@@ -334,11 +340,19 @@ module.exports =
     causeHtml = document.createElement('strong')
     causeHtml.classList.add('error-description')
     causeHtml.innerText = cause
+    invert = atom.config.get("clojure-plus.invertStack")
 
-    strTrace = cause + "\n"
+    strTrace = cause
+    if invert
+      strTrace = "\n" + strTrace
+    else
+      strTrace += "\n"
 
     traceHtmls = trace.map (row) =>
-      strTrace += "\n\tin #{row.fn}\n\tat #{row.file}:#{row.line}\n"
+      if invert
+        strTrace = "\n\tin #{row.fn}\n\tat #{row.file}:#{row.line}\n" + strTrace
+      else
+        strTrace += "\n\tin #{row.fn}\n\tat #{row.file}:#{row.line}\n"
 
       div = document.createElement('div')
       div.classList.add('trace-entry')
