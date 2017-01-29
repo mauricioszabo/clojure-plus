@@ -110,22 +110,26 @@
         display (if-let [args (:args child)]
                   (->> args (cons (:name child)) (s/join " ") (#(str "(" % ")")))
                   (:form child))
-        with-replaced (cond-> display (not (string? display)) (replace-mappings mappings))]
+        with-replaced (cond-> display (not (string? display)) (replace-mappings mappings))
+        display (or (:name child) (:form child))]
     {:display (str display)
      :ret ret
     ;  :id (:id child)
-     :mapping mappings
+    ;  :mapping mappings
      :replaced (str with-replaced)
      :children children-els}))
 
 (defn child-as-str [workspace mappings]
   (when-let [children (some-> workspace :children deref not-empty)]
-    (mapv #(element-as-str % mappings) children)))
+    (->> children
+         (mapcat #(if (or (:name %) (:form %))
+                    [(element-as-str % mappings)]
+                    (child-as-str % mappings)))
+         vec)))
+    ; (mapv #(element-as-str % mappings) children)))
 
 (defn traced-as-str []
   (child-as-str (sayid/ws-get-active!) {}))
-
-(traced-as-str)
 ;
 ; (def f clj.__tracing-test__/f)
 ;
