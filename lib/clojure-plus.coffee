@@ -7,6 +7,8 @@ CljCommands = require './clj-commands'
 highlight = require './sexp-highlight'
 MarkerCollection = require './marker-collection'
 
+require './js/main.js'
+
 module.exports =
   config: require('./configs')
 
@@ -123,6 +125,7 @@ module.exports =
     atom.packages.onDidActivatePackage (pack) =>
       if pack.name == 'proto-repl'
         @commands = new CljCommands(@currentWatches, protoRepl)
+        # require './js/main.js'
 
         protoRepl.onDidConnect =>
           atom.notifications.addSuccess("REPL connected") if atom.config.get('clojure-plus.notify')
