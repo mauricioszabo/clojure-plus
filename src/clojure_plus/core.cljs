@@ -5,6 +5,8 @@
 
 (-> js/atom .-notifications (.addSuccess "TESTE!"))
 
+(def vm (js/require "vm"))
+
 (defmethod repl/process-message :eval-js [message]
   (let [code (:code message)]
     {:op :result
