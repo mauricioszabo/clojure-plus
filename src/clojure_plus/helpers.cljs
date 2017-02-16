@@ -6,7 +6,6 @@
 
 (defn add-command [selector command function]
   (let [disposable (-> js/atom .-commands (.add selector command function))]
-    (println "FOO" disposable)
     (.add @commands disposable)))
 
 (defn remove-all-commands []
