@@ -9,7 +9,6 @@
   (let [code (:code message)]
     {:op :result
      :value (try
-              ; {:status :success, :value (str (js* "eval(~{code})"))}
               {:status :success, :value (str ((fn [src] (.runInThisContext vm src)) code))}
               (catch js/Error e
                 {:status :exception
