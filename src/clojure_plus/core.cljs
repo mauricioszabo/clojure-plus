@@ -1,10 +1,8 @@
 (ns clojure-plus.core
-  (:require ;[clojure.browser.repl :as repl]
-            [cljs.nodejs :as nodejs]
+  (:require [cljs.nodejs :as nodejs]
             [weasel.repl :as repl]))
 
-(-> js/atom .-notifications (.addSuccess "TESTE!"))
-
+(nodejs/enable-util-print!)
 (def vm (js/require "vm"))
 
 (defmethod repl/process-message :eval-js [message]
@@ -28,6 +26,3 @@
 (js/setInterval #(when-not (repl/alive?)
                    (repl/connect "ws://localhost:9001"))
                 3000)
-
-(nodejs/enable-util-print!)
-(.log js/console "WOW!!!!!")
