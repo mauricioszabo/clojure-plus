@@ -1,13 +1,22 @@
 (ns clojure-plus.helpers-test
-  (:require [clojure-plus.helpers :as helpers]
+  (:require [clojure-plus.test :refer [testing]]
+            [clojure-plus.helpers :as helpers]
             [clojure-plus.core :as core]))
 
-(require '[clojure-plus.helpers :as helpers])
-(api/all-ns)
-(expect 10 20)
+(def foo-element (.createElement js/document "foo"))
 
-helpers/a
-; (use 'expectation)
+(defn find-commands [name]
+  (-> js/atom
+      .-commands
+      (.findCommands #js {:target foo-element})
+      js->clj
+      (->> (filter #(= (% "displayName") name)))))
 
-; (t/testing "fooBar"
-;   (t/is (= 1 2)))
+(do ; Add commands
+  (helpers/add-command "foo" "Sample Test" #(println))
+  (testing "command is on global"
+    #(not-empty (find-commands "Sample Test")))
+
+  (helpers/remove-all-commands)
+  (testing "removes command"
+    #(empty? (find-commands "Sample Test"))))

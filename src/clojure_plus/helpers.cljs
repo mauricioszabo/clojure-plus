@@ -1,5 +1,14 @@
 (ns clojure-plus.helpers)
 
-(-> js/atom .-notifications (.addSuccess "TESTE!"))
+(def ^:private CompositeDisposable (.-CompositeDisposable (js/require "atom")))
 
-(def a 20)
+(def ^:private commands (atom (CompositeDisposable.)))
+
+(defn add-command [selector command function]
+  (let [disposable (-> js/atom .-commands (.add selector command function))]
+    (println "FOO" disposable)
+    (.add @commands disposable)))
+
+(defn remove-all-commands []
+  (.dispose @commands)
+  (reset! commands (CompositeDisposable.)))
