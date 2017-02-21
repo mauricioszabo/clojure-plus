@@ -1,5 +1,7 @@
-(ns clojure-plus.helpers-test
-  (:require [clojure-plus.test :refer [testing]]
+(ns ^:figwheel-always clojure-plus.helpers-test
+  (:require-macros [clojure.test :refer [testing is]])
+  (:require ;[clojure-plus.test :refer [testing]
+            ; [cljs.test :as t]
             [clojure-plus.helpers :as helpers]
             [clojure-plus.core :as core]))
 
@@ -12,11 +14,14 @@
       js->clj
       (->> (filter #(= (% "displayName") name)))))
 
-(do ; Add commands
-  (helpers/add-command "foo" "Sample Test" #(println))
-  (testing "command is on global"
-    #(not-empty (find-commands "Sample Test")))
-
-  (helpers/remove-all-commands)
-  (testing "removes command"
-    #(empty? (find-commands "Sample Test"))))
+; (testing "FooBar"
+;   (is (= "Foo" "Bar")))
+;
+; (do ; Add commands
+;   (helpers/add-command "foo" "Sample Test" #(println))
+;   (testing "command is on global"
+;     #(not-empty (find-commands "Sample Test")))
+;
+;   (helpers/remove-all-commands)
+;   (testing "removes command"
+;     #(empty? (find-commands "Sample Test"))))
