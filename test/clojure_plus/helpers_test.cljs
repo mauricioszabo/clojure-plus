@@ -1,7 +1,5 @@
 (ns ^:figwheel-always clojure-plus.helpers-test
-  (:require-macros [clojure.test :refer [testing is]])
-  (:require ;[clojure-plus.test :refer [testing]
-            ; [cljs.test :as t]
+  (:require [clojure.test :refer-macros [deftest is testing run-tests]]
             [clojure-plus.helpers :as helpers]
             [clojure-plus.core :as core]))
 
@@ -14,14 +12,17 @@
       js->clj
       (->> (filter #(= (% "displayName") name)))))
 
-; (testing "FooBar"
-;   (is (= "Foo" "Bar")))
-;
-; (do ; Add commands
-;   (helpers/add-command "foo" "Sample Test" #(println))
-;   (testing "command is on global"
-;     #(not-empty (find-commands "Sample Test")))
-;
-;   (helpers/remove-all-commands)
-;   (testing "removes command"
-;     #(empty? (find-commands "Sample Test"))))
+(find-commands "")
+
+(set! js/__dirname (str (.resolve (js/require "path") ".") "/lib/js/foo/bar"))
+
+(deftest commands
+  (helpers/add-command "foo" "Sample Test" #(println))
+  (testing "command is on global"
+    (is (not-empty (find-commands "Sample Test"))))
+
+  (helpers/remove-all-commands)
+  (testing "removes command"
+    (is (empty? (find-commands "Sample Test")))))
+
+(run-tests)
