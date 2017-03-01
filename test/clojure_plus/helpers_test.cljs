@@ -1,4 +1,4 @@
-(ns ^:figwheel-always clojure-plus.helpers-test
+(ns clojure-plus.helpers-test
   (:require [clojure.test :refer-macros [deftest is testing run-tests]]
             [clojure-plus.helpers :as helpers]
             [clojure-plus.core :as core]))
@@ -13,8 +13,6 @@
       (->> (filter #(= (% "displayName") name)))))
 
 (find-commands "")
-
-(set! js/__dirname (str (.resolve (js/require "path") ".") "/lib/js/foo/bar"))
 
 (deftest commands
   (helpers/add-command "foo" "Sample Test" #(println))
