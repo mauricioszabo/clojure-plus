@@ -4,13 +4,6 @@
             ; [weasel.repl :as repl]))
 
 (nodejs/enable-util-print!)
-(def vm (js/require "vm"))
-
-(defn eval-helper [code {:keys [eval-fn] :as opts}]
-    ((fn [src] (.runInThisContext vm src)) code))
-
-(set! (-> js/figwheel .-client .-utils .-eval_helper) eval-helper)
-
 ; (alter-var-root #'fig.utils/eval-helper (constantly eval-helper))
 
 ; (defmethod repl/process-message :eval-js [message]

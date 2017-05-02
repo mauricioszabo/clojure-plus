@@ -19,7 +19,7 @@
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src" "test"]
                         :figwheel true
-                        :compiler {:main clojure-plus.helpers-test
+                        :compiler {:main clojure-plus.all-tests
                                    :output-to "lib/js/main.js"
                                    :output-dir "lib/js"
                                    :target :nodejs
