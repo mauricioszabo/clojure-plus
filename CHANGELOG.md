@@ -1,3 +1,12 @@
+## 0.2.4 - Shadow Element
+* Removed pseudo ::shadow element on CSS (thanks @barbagrigia)
+* Some debugging information when loading CLJS REPL (but still locking somewhere)
+
+## 0.2.3 - Bugfix on Windows
+* Removed dependency from HOME env variable (fixes
+[#19](https://github.com/mauricioszabo/clojure-plus/issues/19))
+* Refresh and Refresh-all are now commands instead of files
+
 ## 0.2.2 - More helpers
 * Added "interrupt" command. It'll delegate to proto but will not lock anymore our execution context
 * Refresh will now clear dependency cache. This means that refresh will recover from fatal error in more cases

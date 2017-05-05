@@ -13,8 +13,10 @@ module.exports = class CljCommands
   prepareCljs: ->
     if !@cljs
       code = atom.config.get('clojure-plus.cljsCommand')
+      protoRepl.info("Preparing ClojureScript REPL...")
       @promisedRepl.clear()
       @promisedRepl.syncRun(code, 'user', session: 'cljs').then (e) =>
+        protoRepl.info("REPL code evaluated. Waiting for results...")
         @promisedRepl.syncRun("(ns clj.--check-deps--)", 'clj.--check-deps--', session: 'cljs')
         @promisedRepl.syncRun("(def last-exception (atom nil))", 'clj.--check-deps--', session: 'cljs')
         @promisedRepl.syncRun("(def watches (atom {}))", 'clj.--check-deps--', session: 'cljs')
@@ -26,7 +28,7 @@ module.exports = class CljCommands
         @cljs = true
 
   prepare: ->
-    code = @getFile("~/.atom/packages/clojure-plus/lib/clj/__check_deps__.clj")
+    code = @getFile("~/lib/clj/__check_deps__.clj")
     @cljs = false
     @promisedRepl.clear()
     @promisedRepl.syncRun(code, 'user')
@@ -94,7 +96,7 @@ module.exports = class CljCommands
 
   getRefreshCmd: (all) ->
     key = if all then 'clojure-plus.refreshAllCmd' else 'clojure-plus.refreshCmd'
-    @getFile(atom.config.get(key))
+    atom.config.get(key)
 
   # TODO: Move me to MarkerCollection
   assignWatches: ->
@@ -125,8 +127,7 @@ module.exports = class CljCommands
           @repl.stderr("Error trying to open: #{result.error}")
 
   getFile: (file) ->
-    home = process.env.HOME
-    fileName = file.replace("~", home)
+    fileName = file.replace("~", atom.packages.getActivePackage('clojure-plus').path)
     fs.readFileSync(fileName).toString()
 
   nsForMissing: (symbolName) ->
