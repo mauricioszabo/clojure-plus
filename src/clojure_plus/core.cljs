@@ -1,28 +1,33 @@
 (ns clojure-plus.core
   (:require [cljs.nodejs :as nodejs]
-            [figwheel.client.utils :as fig.utils]))
+            [figwheel.client.utils :as fig.utils]
+            [cljs.reader :as edn]))
             ; [weasel.repl :as repl]))
 
-(nodejs/enable-util-print!)
-; (alter-var-root #'fig.utils/eval-helper (constantly eval-helper))
+(defonce disposable
+  (-> js/window (aget "clojure plus extensions") .-disposable))
 
-; (defmethod repl/process-message :eval-js [message]
-;   (let [code (:code message)]
-;     {:op :result
-;      :value (try
-;               {:status :success, :value (str ((fn [src] (.runInThisContext vm src)) code))}
-;               (catch js/Error e
-;                 {:status :exception
-;                  :value (pr-str e)
-;                  :stacktrace (if (.hasOwnProperty e "stack")
-;                                (.-stack e)
-;                                "No stacktrace available.")})
-;               (catch :default e
-;                 {:status :exception
-;                  :value (pr-str e)
-;                  :stacktrace "No stacktrace available."}))}))
+; (set! (.-exports js/module)
+;   #js {:foo "BAR"})
+; (set! (-> js/module .-exports)
+;       #js {:disposable disposable})
 ;
-;
-; (js/setInterval #(when-not (repl/alive?)
-;                    (repl/connect "ws://localhost:9001"))
-;                 3000)
+(nodejs/enable-util-print!)
+
+(defn command-for [name f]
+  (let [disp (-> js/atom .-commands (.add "atom-text-editor"
+                                          (str "clojure-plus:" name)
+                                          f))]
+    (.add disposable disp)))
+
+(def repl (-> (js/require "../../clojure-plus")
+              .getCommands .-promisedRepl))
+
+(defn execute-cmd
+  ([cmd callback] (execute-cmd cmd {} callback))
+  ([cmd ns-or-opts callback]
+   (-> repl
+       (.syncRun (str cmd) ns-or-opts)
+       (.then #(if-let [val (.-value %)]
+                 (callback {:value (edn/read-string val)})
+                 (callback {:error (or (.-error %) %)}))))))

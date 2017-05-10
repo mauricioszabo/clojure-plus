@@ -1,11 +1,9 @@
 (ns ^:figwheel-always clojure-plus.all-tests
-  (:require [cljs.nodejs :as nodejs]
-            [clojure.test :refer-macros [run-tests]]
+  (:require [clojure.test :refer-macros [run-tests]]
             [figwheel.client.utils :as fig.utils]
-
             [clojure-plus.helpers-test]
-            [clojure-plus.modifications-test]))
-
+            [clojure-plus.modifications-test]
+            [clojure-plus.core-test]))
 
 (def vm (js/require "vm"))
 
@@ -14,4 +12,15 @@
 
 (set! (-> js/figwheel .-client .-utils .-eval_helper) eval-helper)
 
-(set! js/__dirname (str (.resolve (js/require "path") ".") "/lib/js/foo/bar"))
+(set! js/__dirname (str (-> js/atom .-packages .getPackageDirPaths)
+                        "/clojure-plus/lib/js/foo/bar"))
+
+(js/setTimeout #(do
+                  (println "BAR" (.-exports js/module))
+                  (set! (.-exports js/module)
+                    #js {:eval_str "FOO"})))
+               ;
+               ; js/atom
+               ; (js/require "atom")
+               ;
+               ; atom.packages.getActivePackage('clojure-plus').path
