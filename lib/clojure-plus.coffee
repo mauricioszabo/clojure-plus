@@ -7,7 +7,11 @@ CljCommands = require './clj-commands'
 highlight = require './sexp-highlight'
 MarkerCollection = require './marker-collection'
 
-require './js/main.js'
+disposable = new CompositeDisposable()
+setTimeout ->
+  window["clojure plus extensions"] = {disposable: disposable}
+  require './js/main.js'
+  delete window["clojure plus extensions"]
 
 module.exports =
   config: require('./configs')
@@ -20,7 +24,7 @@ module.exports =
 
   activate: (state) ->
     @evalModes = new Map()
-    @subs = new CompositeDisposable()
+    @subs = disposable
     @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:refresh-namespaces', =>
       @getCommands().runRefresh()
     @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:interrupt', =>
