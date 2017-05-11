@@ -3,7 +3,7 @@
             [figwheel.client.utils :as fig.utils]
             [clojure-plus.helpers-test]
             [clojure-plus.modifications-test]
-            [clojure-plus.core-test]))
+            [clojure-plus.repl-test]))
 
 (def vm (js/require "vm"))
 
