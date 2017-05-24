@@ -3,7 +3,8 @@
             [figwheel.client.utils :as fig.utils]
             [clojure-plus.helpers-test]
             [clojure-plus.modifications-test]
-            [clojure-plus.repl-test]))
+            [clojure-plus.repl-test]
+            [clojure-plus.refactor-nrepl-test]))
 
 (def vm (js/require "vm"))
 
@@ -14,13 +15,3 @@
 
 (set! js/__dirname (str (-> js/atom .-packages .getPackageDirPaths)
                         "/clojure-plus/lib/js/foo/bar"))
-
-(js/setTimeout #(do
-                  (println "BAR" (.-exports js/module))
-                  (set! (.-exports js/module)
-                    #js {:eval_str "FOO"})))
-               ;
-               ; js/atom
-               ; (js/require "atom")
-               ;
-               ; atom.packages.getActivePackage('clojure-plus').path
