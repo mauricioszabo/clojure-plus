@@ -1,7 +1,7 @@
 (ns clojure-plus.repl
   (:require [cljs.reader :as edn]))
 
-(def repl (-> (js/require "../../clojure-plus")
+(def repl (-> (js/require "../../../clojure-plus")
               .getCommands .-promisedRepl))
 
 (defn execute-cmd
