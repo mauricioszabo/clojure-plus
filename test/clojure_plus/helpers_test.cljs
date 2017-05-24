@@ -15,26 +15,6 @@
       js->clj
       (->> (filter #(= (% "displayName") name)))))
 
-(deftest foobar
-  (testing "FooBar"
-    (is (= "Foo" "Foo"))))
-
-
-(set! js/__dirname (str (.resolve (js/require "path") ".")
-                        "/lib/js/foo/bar"))
-(run-tests)
-;
-; (do ; Add commands
-;   (helpers/add-command "foo" "Sample Test" #(println))
-;   (testing "command is on global"
-;     #(not-empty (find-commands "Sample Test")))
-;
-;   (helpers/remove-all-commands)
-;   (testing "removes command"
-;     #(empty? (find-commands "Sample Test"))))
-
-(find-commands "")
-
 (deftest commands
   (helpers/add-command "foo" "Sample Test" #(println))
   (testing "command is on global"
