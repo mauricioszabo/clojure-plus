@@ -4,11 +4,16 @@
 (def ^:private path (js/require "path"))
 (def ^:private fs (js/require "fs"))
 
-(defn with-text-editor* [f]
+(defn create-text-editor* [f]
   (-> js/atom .-workspace (.open (str "test_" (gensym) ".clj"))
-      (.then (fn [editor]
-               (f editor)
-               (.destroy editor)))))
+      (.then f)))
+
+(defn with-text-editor* [f]
+  (create-text-editor* (fn [editor]
+                         (try
+                           (f editor)
+                           (finally
+                             (.destroy editor))))))
 
 (def set-text #(.setText %1 %2))
 (def text #(.getText %))
