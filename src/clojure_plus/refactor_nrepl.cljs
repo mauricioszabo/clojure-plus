@@ -17,16 +17,19 @@
 
 (defn- format-require [[key & rest]]
   ; 2 spaces, 1 parenthesis, and one space
-  (let [indent (->> (+ 4 (count (str key)))
-                    range
-                    (map (constantly " "))
-                    str/join
-                    (str "\n"))]
-    (str "  (" key " " (str/join indent rest) ")")))
+  (if (empty? rest)
+    (str "  (" key ")")
+    (let [indent (->> (+ 4 (count (str key)))
+                      range
+                      (map (constantly " "))
+                      str/join
+                      (str "\n"))]
+      (str "  (" key " " (str/join indent rest) ")"))))
 
-(defn- format-ns [[_ ns-name & requires]]
+
+(defn format-ns [[_ ns-name & requires]]
   (str "(ns " ns-name "\n"
-       (->> requires (map format-require) str/join)
+       (->> requires (map format-require) (str/join "\n"))
        ")"))
 
 (defn organize-ns [editor]

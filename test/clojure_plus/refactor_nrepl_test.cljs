@@ -24,6 +24,38 @@
                      (.destroy editor)
                      (done)))))))
 
+(deftest format-ns
+  (testing "formatting a simple require"
+    (is (= "(ns something\n  (:require [foo.bar :as bar]))"
+           (refactor/format-ns '(ns something (:require [foo.bar :as bar]))))))
+
+  (testing "formatting multiple requires"
+    (is (= "(ns something
+  (:require [foo.bar :as bar]
+            [foo.baz :as baz]))"
+           (refactor/format-ns '(ns something (:require [foo.bar :as bar]
+                                                        [foo.baz :as baz]))))))
+
+  (testing "formatting require with import"
+    (is (= "(ns something
+  (:require [foo.bar :as bar]
+            [foo.baz :as baz])
+  (:import [foo.bar Baz]))"
+           (refactor/format-ns '(ns something
+                                  (:require [foo.bar :as bar]
+                                            [foo.baz :as baz])
+                                  (:import [foo.bar Baz]))))))
+
+  (testing "formatting require with gen-class"
+    (is (= "(ns something
+  (:require [foo.bar :as bar]
+            [foo.baz :as baz])
+  (:gen-class))"
+           (refactor/format-ns '(ns something
+                                  (:require [foo.bar :as bar]
+                                            [foo.baz :as baz])
+                                  (:gen-class)))))))
+
 (deftest clean-ns
   (async done
     (th/create-text-editor editor
