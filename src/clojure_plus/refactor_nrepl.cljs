@@ -7,6 +7,9 @@
 (def ^:private path (js/require "path"))
 (def ^:private fs (js/require "fs"))
 
+(defn- error-msg [title msg]
+  (-> js/atom .-notifications (.addError title #js {:details msg})))
+
 (defn- ns-range [editor]
   (let [top-levels (-> js/protoRepl .-EditorUtils (.getTopLevelRanges editor))]
     (first (filter #(re-find #"\(\s*ns" (.getTextInBufferRange editor %)) top-levels))))
@@ -41,11 +44,13 @@
     (.writeFileSync fs temp-file (.getText editor))
     (repl/execute-cmd cmd "user" (fn [res]
                                    (println "RESULT" res)
-                                   (when-let [ns-res (:value res)]
+                                   (if-let [ns-res (:value res)]
                                        (try
                                          (rewrite-ns editor (format-ns ns-res))
                                          (finally
-                                           (.unlink fs temp-file))))))))
+                                           (.unlink fs temp-file)))
+                                       (error-msg "Error while rewriting import"
+                                                  (or (:error res) res)))))))
 
 (defn add-require [editor require-str]
   (let [range (ns-range editor)
@@ -56,3 +61,12 @@
                                     (str "(:require " require-str))
                  (str/replace ns-txt #"\)" (str "(:require " require-str "))")))]
     (->> new-ns edn/read-string format-ns (rewrite-ns editor))))
+
+(defn missing-view [symbol-name]
+  (repl/execute-cmd `(clj.--check-deps--/resolve-missing ~symbol-name)
+                    (fn [res]
+                      (if-let [value (:value res)]
+                        (println (distinct value))
+                        (println "ERROR" res)))))
+
+(missing-view "replace")
