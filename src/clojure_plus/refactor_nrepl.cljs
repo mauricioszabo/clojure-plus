@@ -3,6 +3,7 @@
             [cljs.reader :as edn]
             [clojure.string :as str]))
 
+(def SelectView (js/require "../../select-view"))
 (def ^:private tmp (.tmpdir (js/require "os")))
 (def ^:private path (js/require "path"))
 (def ^:private fs (js/require "fs"))
@@ -62,11 +63,23 @@
                  (str/replace ns-txt #"\)" (str "(:require " require-str "))")))]
     (->> new-ns edn/read-string format-ns (rewrite-ns editor))))
 
-(defn missing-view [symbol-name]
+(defn- show-view [editor values]
+  (let [ns->str (fn [[ns-name alias]]
+                  (str "[" ns-name " :as " (or alias "[no alias]") "]"))
+        ns->fn (fn [ns-spec]
+                 #(if (second ns-spec)
+                    (add-require editor (ns->str ns-spec))))]
+    (->> values
+         (map (fn [ns-spec] {:label (ns->str ns-spec) :run (ns->fn ns-spec)}))
+         clj->js
+         (SelectView.))))
+
+(defn missing-view [editor symbol-name]
   (repl/execute-cmd `(clj.--check-deps--/resolve-missing ~symbol-name)
                     (fn [res]
-                      (if-let [value (:value res)]
-                        (println (distinct value))
+                      (println res)
+                      (if-let [values (:value res)]
+                        (show-view editor (distinct values))
                         (println "ERROR" res)))))
-
-(missing-view "replace")
+;
+; (missing-view (-> js/atom .-workspace .getActiveTextEditor) "replace")
