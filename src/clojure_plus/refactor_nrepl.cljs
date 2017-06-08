@@ -63,12 +63,15 @@
                  (str/replace ns-txt #"\)" (str "(:require " require-str "))")))]
     (->> new-ns edn/read-string format-ns (rewrite-ns editor))))
 
+(defn- change-editor-ns! [editor ns-string ns-alias]
+  (add-require editor ns-string))
+
 (defn- show-view [editor values]
   (let [ns->str (fn [[ns-name alias]]
                   (str "[" ns-name " :as " (or alias "[no alias]") "]"))
         ns->fn (fn [ns-spec]
                  #(if (second ns-spec)
-                    (add-require editor (ns->str ns-spec))))]
+                    (change-editor-ns! editor (ns->str ns-spec) (second ns-spec))))]
     (->> values
          (map (fn [ns-spec] {:label (ns->str ns-spec) :run (ns->fn ns-spec)}))
          clj->js
@@ -81,5 +84,6 @@
                       (if-let [values (:value res)]
                         (show-view editor (distinct values))
                         (println "ERROR" res)))))
-;
-; (missing-view (-> js/atom .-workspace .getActiveTextEditor) "replace")
+
+(comment
+ (missing-view (-> js/atom .-workspace .getActiveTextEditor) "replace"))
