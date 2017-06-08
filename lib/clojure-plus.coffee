@@ -452,6 +452,9 @@ module.exports =
       text += " after saving"
     @statusBarTile.item.innerText = text
 
+  consumeInk: (ink) ->
+    window.ink = ink
+
   deactivate: ->
     @evalModes.clear()
     @statusBarTile?.destroy()
