@@ -1,11 +1,11 @@
 (ns clojure-plus.refactor-nrepl-test
   (:require [clojure.test :refer-macros [deftest is testing run-tests async]]
-            [clojure-plus.test-helpers :as th]
+            [clojure-plus.test-helpers :as th :refer-macros [with-text-editor create-text-editor]]
             [clojure-plus.refactor-nrepl :as refactor]))
 
 (deftest ns-rewrite
   (testing "rewrites NS"
-      (th/with-text-editor editor
+      (with-text-editor editor
         (th/set-text editor "(ns something
   (:require
             [clojure.walk :as walk]))
@@ -15,7 +15,7 @@
 
 (deftest do-nothing-if-no-require
     (async done
-      (th/create-text-editor editor
+      (create-text-editor editor
         (th/set-text editor "(ns foo)")
         (-> (refactor/organize-ns editor)
             (.then (fn []
@@ -58,7 +58,7 @@
 
 (deftest clean-ns
   (async done
-    (th/create-text-editor editor
+    (create-text-editor editor
                            (th/set-text editor "(ns something
   (:require [clojure.string :as str]
             [clojure.set :as set]
@@ -76,7 +76,7 @@
                                   (done)))))))
 
 (deftest resolve-missing
-  (th/with-text-editor editor
+  (with-text-editor editor
     (testing "adds a new require at namespace"
       (th/set-text editor "(ns foo\n      )")
       (refactor/add-require editor "[clojure.string :as str]")
@@ -89,5 +89,3 @@
   (:require [clojure.set :as set]
             [clojure.string :as str]))"
              (th/text editor))))))
-
-(run-tests)
