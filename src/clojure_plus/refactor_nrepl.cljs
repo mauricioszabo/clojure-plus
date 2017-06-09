@@ -3,7 +3,7 @@
             [cljs.reader :as edn]
             [clojure.string :as str]))
 
-(def SelectView (js/require "../../select-view"))
+(def SelectView (js/require "../../../select-view"))
 (def ^:private tmp (.tmpdir (js/require "os")))
 (def ^:private path (js/require "path"))
 (def ^:private fs (js/require "fs"))
