@@ -25,4 +25,6 @@
                      (fn [res]
                        (when (contains? res :value)
                          (command-for 'organize-namespace
-                                      #(refactor/organize-ns (current-editor))))))))
+                                      #(refactor/organize-ns (current-editor)))
+                         (command-for 'add-import-for-var
+                                      #(refactor/find-missing-symbol! (current-editor))))))))
