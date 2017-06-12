@@ -13,7 +13,7 @@
       (->> (filter #(= (% "displayName") name)))))
 
 (deftest commands
-  (helpers/add-command "foo" "Sample Test" #(println))
+  (helpers/add-command "foo" "Sample Test" #(identity 10))
   (testing "command is on global"
     (is (not-empty (find-commands "Sample Test"))))
 
