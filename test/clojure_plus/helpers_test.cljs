@@ -1,8 +1,5 @@
 (ns ^:figwheel-always clojure-plus.helpers-test
-  ; (:require-macros [clojure.test :refer [deftest testing is run-tests]])
-  (:require ;[clojure-plus.test :refer [run-tests]]
-            ; [cljs.test :as t]
-            [cljs.test :refer-macros [deftest is testing run-tests]]
+  (:require [cljs.test :refer-macros [deftest is testing run-tests]]
             [clojure-plus.helpers :as helpers]
             [clojure-plus.core :as core]))
 
