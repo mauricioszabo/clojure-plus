@@ -22,5 +22,14 @@
                                    :output-dir "lib/js"
                                    :target :nodejs
                                    :optimizations :none
-                                   :source-map true}}]}
+                                   :source-map true}}
+                       {:id "release"
+                        :source-paths ["src"]
+                        :figwheel true
+                        :compiler {:main clojure-plus.core
+                                   :output-to "lib/js/main.js"
+                                  ;  :output-dir "lib/js"
+                                   :target :nodejs
+                                   :optimizations :simple
+                                   :output-wrapper true}}]}
   :figwheel {})
