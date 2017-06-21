@@ -2,34 +2,16 @@
 
 (def SelectListView (.-SelectListView (js/require "atom-space-pen-views")))
 
-(let [select-list (doto (SelectListView.)
-                        (.addClass "overlay from-top")
-                        (.setItems #js [{:label "FOO"}]))
-      panel (-> js/atom .-workspace (.addModalPane #js {:item select-list}))]
-  (def p panel)
-  (.show panel))
+(defn select-view [items]
+  (let [view-for-item (fn [item] (str "<li>" (.-label item) "</li>"))
+        select-list (doto (SelectListView.)
+                          (.addClass "overlay from-top")
+                          (aset "viewForItem" view-for-item)
+                          (.setItems (clj->js items)))
+        panel (-> js/atom .-workspace (.addModalPanel #js {:item select-list}))]
 
-; module.exports = class SelectView extends SelectListView
-;   initialize: (items) ->
-;     super
-;     @addClass('overlay from-top')
-;     @setItems(items)
-;     @panel ?= atom.workspace.addModalPanel(item: this)
-;     @panel.show()
-;
-;     @focusFilterEditor()
-;
-;   viewForItem: (item) ->
-;     "<li>#{item.label}</li>"
-;
-;   getFilterKey: ->
-;     "label"
-;
-;   confirmed: (item) ->
-;     item.run()
-;     @cancel()
-;     e = atom.workspace.getActiveTextEditor()
-;     atom.views.getView(e).focus()
-;
-;   cancelled: ->
-;     @panel.destroy()
+    (doto select-list
+          (aset "cancelled" #(.destroy panel))
+          (aset "confirmed" (fn [item] (.run item) (.cancel select-list))))
+    (.show panel)
+    (.focusFilterEditor select-list)))

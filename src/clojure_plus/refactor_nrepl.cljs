@@ -1,10 +1,9 @@
 (ns clojure-plus.refactor-nrepl
-  (:require [clojure.string :as str]
-            [clojure-plus.repl :as repl]
+  (:require [clojure-plus.repl :as repl]
+            [clojure-plus.ui.select-view :as sv]
             [cljs.reader :as edn]
             [clojure.string :as str]))
 
-(def SelectView (js/require "../../../select-view"))
 (def TextEditor (.-TextEditor (js/require "atom")))
 (def ^:private tmp (.tmpdir (js/require "os")))
 (def ^:private path (js/require "path"))
@@ -104,8 +103,7 @@
                     (define-alias! editor range (first ns-spec))))]
     (->> values
          (map (fn [ns-spec] {:label (ns->str ns-spec) :run (ns->fn ns-spec)}))
-         clj->js
-         (SelectView.))))
+         sv/select-view)))
 
 (defn missing-view [editor range symbol-name]
   (repl/execute-cmd `(clj.--check-deps--/resolve-missing ~symbol-name)
