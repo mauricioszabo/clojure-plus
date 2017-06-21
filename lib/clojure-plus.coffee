@@ -393,7 +393,7 @@ module.exports =
       div
 
     treeHtml = protoRepl.ink.tree.treeView(causeHtml, traceHtmls, {})
-    result.setContent(treeHtml)
+    result.setContent(treeHtml, error: true)
     result.view.classList.add('error')
     protoRepl.stderr(strTrace)
 
