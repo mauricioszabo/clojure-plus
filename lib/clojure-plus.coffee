@@ -68,8 +68,6 @@ module.exports =
     @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:execute-selection-and-copy-pretty-printed-result', =>
       code = "(clojure.core/with-out-str (clojure.pprint/pprint #{editorCode()})))"
       @executeAndCopy(code, 'pretty-print')
-    @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:import-for-missing-symbol', =>
-      @importForMissing()
     @subs.add atom.commands.add 'atom-text-editor', 'clojure-plus:remove-unused-imports', =>
       @removeUnusedImport(atom.workspace.getActiveTextEditor())
 
@@ -146,47 +144,6 @@ module.exports =
   interrupt: ->
     protoRepl.interrupt()
     @getCommands().promisedRepl.clear()
-
-  importForMissing: ->
-      editor = atom.workspace.getActiveTextEditor()
-      [varRange, varNameRaw] = @getRangeAndVar(editor)
-      varName = varNameRaw?.replace(/"/g, '\\"')
-      if !varName
-        atom.notifications.addError("Position your cursor in a clojure var name")
-        return
-
-      @getCommands().nsForMissing(varName).then (results) =>
-        command = (namespace, alias) ->
-          atom.clipboard.write("[#{namespace} :as #{alias}]")
-          editor.setTextInBufferRange(varRange, "#{alias}/#{varNameRaw}")
-          atom.notifications.addSuccess("Import copied to clipboard!")
-
-        if !results.value
-          atom.notifications.addError("Error processing import request", detail: results.error)
-          return
-
-        result = protoRepl.parseEdn(results.value)
-        if result && result.length > 0
-          items = result.map (res) ->
-            alias = if res[1] then res[1] else "[no alias]"
-            text = "[#{res[0]} :as #{alias}]"
-            label: text, run: =>
-              if res[1]
-                command(res[0], res[1])
-              else
-                te = new TextEditor(mini: true, placeholderText: "type your namespace alias")
-                panel = atom.workspace.addModalPanel(item: te)
-                atom.commands.add te.element, 'core:confirm': ->
-                  command(res[0], te.getText())
-                  panel.destroy()
-                  atom.views.getView(atom.workspace).focus()
-                , 'core:cancel': ->
-                  panel.destroy()
-                  atom.views.getView(atom.workspace).focus()
-                # TODO - VER ISSO!
-          new SelectView(items)
-        else
-          atom.notifications.addError("Import with namespace alias not found")
 
   removeUnusedImport: (editor) ->
     project = atom.project.getPaths()
